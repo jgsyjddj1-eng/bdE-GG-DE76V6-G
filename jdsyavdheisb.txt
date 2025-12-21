@@ -1,5 +1,3 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/510HKAqke/Do7nasha8/refs/heads/main/jjzhsjzxjhj"))()
-
 local Libary = loadstring(game:HttpGet("https://raw.githubusercontent.com/kllooep/Fjjzxda6/refs/heads/main/DovEn529"))()
 local Window = Libary:MakeWindow({
     Title = "👹NetroZHub- فريق",
