@@ -275,8 +275,8 @@ local Owners = {
 }
 
 local Admins = {
-	["sortou"] = true,
-	["sevbo"] = true,
+	["iskeowa"] = true,
+	["yew99yew"] = true,
 	["suknak"] = true
 }
 
@@ -6373,4 +6373,4 @@ game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eCo
 
 task.wait(1)
 
-loadstring(game:HttpGet("https://scriptsneonauth.vercel.app/api/scripts/3792552f-efb4-4e00-902d-61cf96c667f8/raw"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/kllooep/Fjjzxda6/main/Tahakom74"))()
