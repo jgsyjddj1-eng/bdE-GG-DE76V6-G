@@ -6275,7 +6275,7 @@ RedzTab:AddToggle({
 	end
 })
 RedzTab:AddToggle({
-    Name = "حذف الأدوات الممنوعة",
+    Name = "مضاد لاق ادوات",
     Default = false,
     Callback = function(state)
 
