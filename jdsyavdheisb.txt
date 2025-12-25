@@ -5315,6 +5315,92 @@ loadstring(game:HttpGet("https://scriptsneonauth.vercel.app/api/scripts/2a199277
 })
 
 local Tab = Window:MakeTab({"الاماكن", "tp"})
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local selectedJobId = nil
+local isTeleporting = false
+
+
+Tab:AddTextBox({
+    Name = "الدخول إلى سيرفر",
+    Description = "اكتب JobId الخاص بالسيرفر",
+    PlaceholderText = "ادخل معرف السيرفر",
+    Callback = function(value)
+        selectedJobId = tostring(value)
+    end
+})
+
+Tab:AddButton({
+    Name = "دخول السيرفر",
+    Callback = function()
+        if isTeleporting then return end
+
+        if not selectedJobId or selectedJobId == "" then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "خطأ",
+                Text = "لم يتم إدخال معرف",
+                Duration = 4
+            })
+            return
+        end
+
+        isTeleporting = true
+
+        local success, err = pcall(function()
+            TeleportService:TeleportToPlaceInstance(
+                game.PlaceId,
+                selectedJobId,
+                LocalPlayer
+            )
+        end)
+
+        if not success then
+            isTeleporting = false
+
+            local msg = tostring(err)
+
+            local reason = "فشل الدخول إلى السيرفر"
+
+            if msg:lower():find("private") then
+                reason = "عذراً، هذا السيرفر خاص 🔒"
+            elseif msg:lower():find("full") then
+                reason = "عذراً، هذا السيرفر ممتلئ 🚫"
+            elseif msg:lower():find("job") or msg:lower():find("instance") then
+                reason = "JobId غير صالح ❌"
+            end
+
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "تعذر الدخول",
+                Text = reason,
+                Duration = 5
+            })
+        end
+    end
+})
+
+TeleportService.TeleportInitFailed:Connect(function(player, teleportResult, errorMessage)
+    if player ~= LocalPlayer then return end
+
+    isTeleporting = false
+
+    local reason = "فشل الانتقال"
+
+    if teleportResult == Enum.TeleportResult.GameFull then
+        reason = "عذراً، هذا السيرفر ممتلئ 🚫"
+    elseif teleportResult == Enum.TeleportResult.GamePrivate then
+        reason = "عذراً، هذا السيرفر خاص 🔒"
+    elseif teleportResult == Enum.TeleportResult.InvalidTeleportDestination then
+        reason = "معرف غير صالح❌"
+    end
+
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "تعذر الدخول",
+        Text = reason,
+        Duration = 5
+    })
+end)
 
 local teleportButtons = {
     {"فندق", CFrame.new(192, 4, 272)},
@@ -6247,24 +6333,26 @@ RedzTab:AddToggle({
 	end
 })
 
-local AntiBugConn
-
 RedzTab:AddToggle({
 	Name = "مضاد قلتشات",
 	Default = false,
 	Callback = function(enabled)
-		if AntiBugConn then
-			AntiBugConn:Disconnect()
-			AntiBugConn = nil
+
+		local RunService = game:GetService("RunService")
+		local AntiBugConn
+
+		if _G.__AntiBugConn then
+			_G.__AntiBugConn:Disconnect()
+			_G.__AntiBugConn = nil
 		end
 
 		if enabled then
-			AntiBugConn = RunService.Stepped:Connect(function()
+			_G.__AntiBugConn = RunService.Stepped:Connect(function()
 				local cam = workspace.CurrentCamera
 				if not cam then return end
 
 				for _, obj in ipairs(cam:GetChildren()) do
-					if obj:IsA("BasePart") and obj.Name:lower() == "water" then
+					if obj:IsA("BasePart") and string.lower(obj.Name) == "water" then
 						pcall(function()
 							obj:Destroy()
 						end)
@@ -6272,6 +6360,7 @@ RedzTab:AddToggle({
 				end
 			end)
 		end
+
 	end
 })
 RedzTab:AddToggle({
@@ -6357,19 +6446,3 @@ RedzTab:AddToggle({
 		end
 	end
 })
-
-local args = {
-	"RolePlayName",
-	"DemoZHub V0.8🎅"
-}
-game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTex1t"):FireServer(unpack(args))
-
-local args = {
-	"PickingRPNameColor",
-	Color3.new(1, 0.022445499897003174, 0)
-}
-game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eColo1r"):FireServer(unpack(args))
-
-task.wait(1)
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/kllooep/Fjjzxda6/main/Tahakom74"))()
