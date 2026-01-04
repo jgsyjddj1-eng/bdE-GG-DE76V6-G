@@ -65,6 +65,7 @@ local Owners = {
 
 local Admins = {
 	Zarba_751 = true,
+    ADJ_71 = true,
     DemonHub_Dev = true,
     malk_55117 = true,
     imane_pink54 = true,
