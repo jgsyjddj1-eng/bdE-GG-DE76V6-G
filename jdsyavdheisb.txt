@@ -50,222 +50,206 @@ InfoTab:AddParagraph({
 })
 
 InfoTab:AddSection({ "الرتب" })
-
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Roles = {
-    ["Sajwaad"] = "مطور",
-    ["ghalidev_0"] = "مطور", 
-    ["ghali0059"] = "مطور", 
-    ["wkwjdnsnsndnxxnsnsn"] = "ادمن",
-    ["Zarba_751"] = "ادمن",    
-    ["malk_55117"] = "ادمن",
-    ["DemonHub_Dev"] = "ادمن",
-    ["imane_pink54"] = "ادمن",
-    ["zdrkn305"] = "ادمن",
-    ["iskeowa"] = "ادمن",
-    ["yew99yew"] = "ادمن",
-    ["Amine_city"] = "ادمن",
-    ["HUSAM1438"] = "ادمن",
-    ["Eiles917"] = "ادمن",
-    ["mohmmad47n"] = "ادمن",
-    ["mr_Mustafa213"] = "ادمن"
+-- ===== إعدادات =====
+local TARGET_BIO = "MiDe7moZ"
+local FIRE_ON_ENABLE = "/found"
+
+local Owners = {
+	Sajwaad = true,
+	ghalidev_0 = true,
+	ghali0059 = true
 }
 
-local tagTracks = {} -- { player = connection }
+local Admins = {
+	Zarba_751 = true,
+    DemonHub_Dev = true,
+    malk_55117 = true,
+    imane_pink54 = true,
+    zdrkn305 = true,
+	iskeowa = true,
+    yew99yew = true,
+    HUSAM1438 = true,
+	Amine_city = true,
+    Eiles917 = true,
+    mohmmad47n = true,
+	mr_Mustafa213 = true
+}
+
+-- ===== متغيرات =====
 local tagsEnabled = false
+local connections = {}
+local tagTracks = {}
 
-local function createProfessionalTag(player)
-    if not tagsEnabled then return end
+-- اللاعبين المحفوظين (مرة واحدة فقط)
+local SavedPlayers = {} -- [UserId] = true
 
-    local function removeOldTag()
-        if player.Character then
-            local old = player.Character:FindFirstChild("NameTag")
-            if old then
-                old:Destroy()
-            end
-        end
-    end
-    removeOldTag()
-
-    local function buildTag()
-        if not tagsEnabled then return end
-        local character = player.Character
-        if not character then return end
-        local head = character:FindFirstChild("Head")
-        if not head then return end
-
-        removeOldTag()
-
-        local gui = Instance.new("BillboardGui")
-        gui.Name = "NameTag"
-        gui.Adornee = head
-        gui.Parent = character
-        gui.Size = UDim2.new(4, 0, 1.5, 0)
-        gui.StudsOffset = Vector3.new(0, 3.5, 0)
-        gui.AlwaysOnTop = true
-
-        local frame = Instance.new("Frame")
-        frame.Size = UDim2.new(1, 0, 1, 0)
-        frame.BackgroundTransparency = 0.1
-        frame.BorderSizePixel = 0
-        frame.Parent = gui
-
-        local uicorner = Instance.new("UICorner")
-        uicorner.CornerRadius = UDim.new(0, 8)
-        uicorner.Parent = frame
-
-        local gradient = Instance.new("UIGradient")
-        gradient.Rotation = 90
-        gradient.Parent = frame
-
-        local stroke = Instance.new("UIStroke")
-        stroke.Thickness = 1.5
-        stroke.Transparency = NumberSequence.new(0.3)
-        stroke.Parent = frame
-
-        local shadow = Instance.new("ImageLabel")
-        shadow.Image = "rbxassetid://1316045217"
-        shadow.BackgroundTransparency = 1
-        shadow.Size = UDim2.new(1, 6, 1, 6)
-        shadow.Position = UDim2.new(0, -3, 0, -3)
-        shadow.ZIndex = 0
-        shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-        shadow.ImageTransparency = 0.8
-        shadow.Parent = frame
-
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(1, 0, 1, 0)
-        label.BackgroundTransparency = 1
-        label.Font = Enum.Font.GothamBold
-        label.TextSize = 20
-        label.Parent = frame
-
-        local role = Roles[player.Name] or "عضو"
-        label.Text = role
-
-        if role == "مطور" then
-            gradient.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 0, 150)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 50, 255))
-            }
-            stroke.Color = Color3.fromRGB(200, 100, 255)
-        elseif role == "ادمن" then
-            gradient.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 0, 0)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 50))
-            }
-            stroke.Color = Color3.fromRGB(255, 100, 100)
-        else
-            gradient.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 120, 170)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 180, 255))
-            }
-            stroke.Color = Color3.fromRGB(255, 255, 255)
-        end
-
-        spawn(function()
-            while gui.Parent and tagsEnabled do
-                if role == "مطور" then
-                    stroke.Color = Color3.fromRGB(200, 100, 255)
-                elseif role == "ادمن" then
-                    stroke.Color = Color3.fromRGB(255, 100, 100)
-                else
-                    stroke.Color = Color3.fromRGB(255, 255, 255)
-                end
-                wait(0.5)
-            end
-        end)
-    end
-
-    spawn(buildTag)
-
-    local charConnection
-    charConnection = player.CharacterAdded:Connect(function()
-        wait(0.5)
-        if tagsEnabled then
-            spawn(buildTag)
-        end
-    end)
-
-    if tagTracks[player] then
-        tagTracks[player]:Disconnect()
-    end
-    tagTracks[player] = charConnection
-
-    player.AncestryChanged:Connect(function(_, parent)
-        if not parent then
-            if tagTracks[player] then
-                tagTracks[player]:Disconnect()
-                tagTracks[player] = nil
-            end
-        end
-    end)
+-- ===== إرسال Bio =====
+local function fireBio(text)
+	local args = { "RolePlayBio", text }
+	ReplicatedStorage:WaitForChild("RE")
+		:WaitForChild("1RPNam1eTex1t")
+		:FireServer(unpack(args))
 end
 
-local function updateAllTags()
-    if not tagsEnabled then return end
-    for _, player in ipairs(Players:GetPlayers()) do
-        spawn(function()
-            createProfessionalTag(player)
-        end)
-    end
+-- ===== تفريغ Bio بعد ثانية =====
+local function fireFoundThenClear()
+	fireBio(FIRE_ON_ENABLE)
+	task.delay(1, function()
+		fireBio("") -- تفريغ النص بعد ثانية
+	end)
 end
 
-local function clearAllTags()
-    for _, player in ipairs(Players:GetPlayers()) do
-        local character = player.Character
-        if character then
-            local tag = character:FindFirstChild("NameTag")
-            if tag then tag:Destroy() end
-        end
-    end
+-- ===== حذف التاج =====
+local function removeTag(player)
+	if player.Character then
+		local tag = player.Character:FindFirstChild("NameTag")
+		if tag then tag:Destroy() end
+	end
+end
+
+-- ===== إنشاء التاج =====
+local function createTag(player)
+	if not tagsEnabled then return end
+	if not SavedPlayers[player.UserId] then return end
+
+	local char = player.Character
+	if not char then return end
+
+	local head = char:FindFirstChild("Head")
+	if not head then return end
+
+	removeTag(player)
+
+	local role = "عضو"
+	if Owners[player.Name] then
+		role = "مطور"
+	elseif Admins[player.Name] then
+		role = "ادمن"
+	end
+
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "NameTag"
+	gui.Adornee = head
+	gui.Parent = char
+	gui.Size = UDim2.new(4, 0, 1.5, 0)
+	gui.StudsOffset = Vector3.new(0, 3.5, 0)
+	gui.AlwaysOnTop = true
+
+	local frame = Instance.new("Frame", gui)
+	frame.Size = UDim2.new(1, 0, 1, 0)
+	frame.BorderSizePixel = 0
+	frame.BackgroundTransparency = 0.1
+
+	Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+
+	local gradient = Instance.new("UIGradient", frame)
+	gradient.Rotation = 90
+
+	local stroke = Instance.new("UIStroke", frame)
+	stroke.Thickness = 1.5
+
+	local label = Instance.new("TextLabel", frame)
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.GothamBold
+	label.TextScaled = true
+	label.Text = role
+	label.TextColor3 = Color3.new(1,1,1)
+
+	if role == "مطور" then
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 215, 0)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 170, 0))
+		}
+		stroke.Color = Color3.fromRGB(255, 215, 0)
+	elseif role == "ادمن" then
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 0, 0)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 50))
+		}
+		stroke.Color = Color3.fromRGB(255, 100, 100)
+	else
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 120, 170)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 180, 255))
+		}
+		stroke.Color = Color3.fromRGB(255,255,255)
+	end
+end
+
+-- ===== مراقبة لاعب =====
+local function watchPlayer(player)
+	local bag = player:WaitForChild("PlayersBag", 5)
+	if not bag then return end
+
+	local bio = bag:WaitForChild("RPBio", 5)
+	if not bio then return end
+
+	local function check()
+		if not tagsEnabled then return end
+
+		-- إذا أصبح الـ Bio = MiDe7moZ → حفظ اللاعب
+		if bio.Value == TARGET_BIO then
+			SavedPlayers[player.UserId] = true
+			createTag(player)
+		end
+	end
+
+	check()
+	table.insert(connections, bio.Changed:Connect(check))
+end
+
+-- ===== تفعيل النظام =====
+local function enableSystem()
+	fireFoundThenClear()
+
+	for _, player in ipairs(Players:GetPlayers()) do
+		watchPlayer(player)
+		-- إذا اللاعب محفوظ مسبقًا، أظهر التاج مباشرة
+		if SavedPlayers[player.UserId] then
+			createTag(player)
+		end
+	end
+
+	table.insert(connections, Players.PlayerAdded:Connect(watchPlayer))
+
+	table.insert(connections, Players.PlayerRemoving:Connect(function(player)
+		SavedPlayers[player.UserId] = nil
+	end))
+end
+
+-- ===== إيقاف النظام =====
+local function disableSystem()
+	for _, c in ipairs(connections) do
+		pcall(function() c:Disconnect() end)
+	end
+	connections = {}
+
+	for _, plr in ipairs(Players:GetPlayers()) do
+		removeTag(plr)
+	end
 end
 
 InfoTab:AddToggle({
-    Name = "كشف الرتب",
-    Default = true,
-    Callback = function(state)
-        tagsEnabled = state
-        if state then
-            updateAllTags()
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "الرتبة",
-                Text = "تم تفعيل كشف الرتبة",
-                Duration = 3
-            })
-        else
-            clearAllTags()
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "الرتبة",
-                Text = "تم إيقاف كشف الرتبة",
-                Duration = 3
-            })
-        end
-    end
+	Name = "كشف المستخدمين",
+	Default = true,
+	Callback = function(state)
+		tagsEnabled = state
+		if state then
+			enableSystem()
+		else
+			disableSystem()
+		end
+	end
 })
 
-
-spawn(function()
-    wait(1)
-    if tagsEnabled then
-        updateAllTags()
-    end
-end)
-
-
-Players.PlayerAdded:Connect(function(player)
-    if tagsEnabled then
-        spawn(function()
-            createProfessionalTag(player)
-        end)
-    end
-end)
 InfoTab:AddParagraph({"مطور"})
 InfoTab:AddParagraph({"ادمن"})
 InfoTab:AddParagraph({"عضو"})
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
@@ -6267,72 +6251,6 @@ local AntiBannedToggle = RedzTab:AddToggle({
             end
         end
     end
-})
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-
-local player = Players.LocalPlayer
-
-local antiVehicleCollision = false
-local vehicleConn
-
-local keywords = { "bomb", "soccer", "boat" }
-local carKeyword = "car"
-local wheelKeyword = "wheel"
-
-local function containsKeyword(name, list)
-	if typeof(name) ~= "string" then return false end
-	name = name:lower()
-	for _, word in ipairs(list) do
-		if name:find(word) then
-			return true
-		end
-	end
-	return false
-end
-
-local function applyCollision(obj)
-	if not obj:IsA("BasePart") then return end
-	if obj.Name:lower():find(wheelKeyword) then return end
-
-	local parent = obj
-	while parent do
-		local pname = parent.Name:lower()
-		if pname:find(wheelKeyword) then return end
-
-		if pname:find(carKeyword) or containsKeyword(pname, keywords) then
-			obj.CanCollide = not antiVehicleCollision
-			return
-		end
-		parent = parent.Parent
-	end
-end
-
-local function scanAll()
-	for _, obj in ipairs(Workspace:GetDescendants()) do
-		applyCollision(obj)
-	end
-end
-
-RedzTab:AddToggle({
-	Name = "مضاد فلنق",
-	Default = false,
-	Callback = function(value)
-		antiVehicleCollision = value
-
-		if vehicleConn then
-			vehicleConn:Disconnect()
-			vehicleConn = nil
-		end
-
-		if value then
-			scanAll()
-			vehicleConn = Workspace.DescendantAdded:Connect(applyCollision)
-		else
-			scanAll()
-		end
-	end
 })
 
 RedzTab:AddToggle({
