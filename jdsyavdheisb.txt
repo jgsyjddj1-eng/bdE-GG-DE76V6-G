@@ -5595,6 +5595,103 @@ local TabSp = Window:MakeTab({
 })
 
 TabSp:AddSection({ "تدبيل/سبام" })
+TabSp:AddToggle({
+	Name = "تدبيل قوارب",
+	Default = false,
+	Callback = function(enabled)
+
+		-- متغيرات محلية داخل التوغل فقط
+		local Players = game:GetService("Players")
+		local Workspace = game:GetService("Workspace")
+		local LocalPlayer = Players.LocalPlayer
+
+		if enabled then
+			--------------------------------------------------
+			-- تشغيل
+			--------------------------------------------------
+			_G.CanoeToggleRunning = true
+			_G.CanoeUsed = {}
+
+			local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+			local HRP = char:WaitForChild("HumanoidRootPart")
+			local Humanoid = char:WaitForChild("Humanoid")
+
+			_G.CanoeSavedPos = HRP.CFrame
+
+			local Button = Workspace.WorkspaceCom["001_CanoeCloneButton"].Button
+			local ClickDetector = Button.ClickDetector
+			local Storage = Workspace.WorkspaceCom["001_CanoeStorage"]
+
+			-- حدود المربع
+			local minX, maxX = -75.40, 24.75
+			local minZ, maxZ = -21.44, 50.41
+			local fixedY = 4.51
+
+			task.spawn(function()
+				while _G.CanoeToggleRunning do
+
+					-- البحث عن قارب جديد غير مستخدم
+					local canoe
+					for _, v in ipairs(Storage:GetChildren()) do
+						if v.Name == "Canoe" and not _G.CanoeUsed[v] then
+							canoe = v
+							break
+						end
+					end
+
+					-- إذا لم يوجد قارب → اضغط الزر
+					if not canoe then
+						HRP.CFrame = Button.CFrame * CFrame.new(0, 2, 0)
+						task.wait(0.25)
+						fireclickdetector(ClickDetector)
+						task.wait(0.4)
+						continue
+					end
+
+					-- الحصول على المقعد
+					local seat = canoe:FindFirstChildWhichIsA("VehicleSeat", true)
+					if seat then
+						-- الجلوس
+						HRP.CFrame = seat.CFrame * CFrame.new(0, 2, 0)
+						task.wait(0.3)
+						seat:Sit(Humanoid)
+						task.wait(0.6)
+
+						-- نقل القارب لمكان عشوائي داخل المربع
+						local randX = math.random() * (maxX - minX) + minX
+						local randZ = math.random() * (maxZ - minZ) + minZ
+						seat.CFrame = CFrame.new(randX, fixedY, randZ)
+
+						task.wait(0.4)
+
+						-- النزول + القفز (مضمون)
+						seat:Sit(nil)
+						task.wait(0.1)
+						Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+
+
+						_G.CanoeUsed[canoe] = true
+					end
+
+					task.wait(0.5)
+				end
+			end)
+
+		else
+
+			_G.CanoeToggleRunning = false
+			task.wait(0.3)
+
+			local char = LocalPlayer.Character
+			if char and _G.CanoeSavedPos then
+				local hrp = char:FindFirstChild("HumanoidRootPart")
+				if hrp then
+					hrp.CFrame = _G.CanoeSavedPos
+				end
+			end
+		end
+	end
+})
 
 local duplicarAtivo = false
 local duplicarThread = nil
