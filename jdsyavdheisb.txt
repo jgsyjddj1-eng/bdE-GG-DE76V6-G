@@ -5728,45 +5728,33 @@ TabSp:AddToggle({
     end
 })
 
-local spam = false
-local playerName = game.Players.LocalPlayer.Name
-
 TabSp:AddToggle({
     Name = "سبام تفجير قنابل",
     Default = false,
-    Callback = function(v)
-        spam = v
-
+    Callback = function(spam)
         if spam then
-        
             task.spawn(function()
+                local playerName = game.Players.LocalPlayer.Name
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local VirtualInputManager = game:GetService("VirtualInputManager")
+
                 while spam do
-                    local args = {
-                        [1] = "Bomb" .. playerName
-                    }
                     pcall(function()
-                        game:GetService("ReplicatedStorage"):WaitForChild("RE")
+                        local args = {[1] = "Bomb" .. playerName}
+                        ReplicatedStorage:WaitForChild("RE")
                             :WaitForChild("1Blo1wBomb1sServe1r")
                             :FireServer(unpack(args))
                     end)
-                    task.wait(0.1)
-                end
-            end)
 
-            task.spawn(function()
-                while spam do
                     pcall(function()
-                        local VirtualInputManager = game:GetService("VirtualInputManager")
                         VirtualInputManager:SendMouseButtonEvent(500, 500, 0, true, game, 0)
                         task.wait(1.5)
                         VirtualInputManager:SendMouseButtonEvent(500, 500, 0, false, game, 0)
                     end)
+
                     task.wait(0.1)
                 end
             end)
-
-        else
-
         end
     end
 })
