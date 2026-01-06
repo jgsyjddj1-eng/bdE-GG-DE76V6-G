@@ -6209,27 +6209,14 @@ local RedzTab = Window:MakeTab({
     Title = "(EXTRA)الحماية",
     Icon = "shield"
 })
-
-local voidProtectionEnabled = false
-
-local function ActivateVoidProtection()
-    voidProtectionEnabled = true
-    game.Workspace.FallenPartsDestroyHeight = 0/0
-end
-
-local function DeactivateVoidProtection()
-    voidProtectionEnabled = false
-    game.Workspace.FallenPartsDestroyHeight = -500
-end
-
 RedzTab:AddToggle({
     Name = "مضاد موت(مدمر💀)",
     Default = false,
     Callback = function(state)
         if state then
-            ActivateVoidProtection()
+            game.Workspace.FallenPartsDestroyHeight = 0/0
         else
-            DeactivateVoidProtection()
+            game.Workspace.FallenPartsDestroyHeight = -500
         end
     end
 })
