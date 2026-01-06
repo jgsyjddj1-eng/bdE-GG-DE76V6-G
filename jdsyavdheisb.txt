@@ -5729,27 +5729,47 @@ TabSp:AddToggle({
 })
 
 local spam = false
-local playerName = game.Players.LocalPlayer.Name -- pega automaticamente o nome do player local
+local playerName = game.Players.LocalPlayer.Name
 
 TabSp:AddToggle({
     Name = "سبام تفجير قنابل",
     Default = false,
     Callback = function(v)
         spam = v
+
         if spam then
+        
             task.spawn(function()
                 while spam do
                     local args = {
                         [1] = "Bomb" .. playerName
                     }
-                    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Blo1wBomb1sServe1r"):FireServer(unpack(args))
-                    task.wait(0.1) -- intervalo de 0.1 segundo entre cada spam
+                    pcall(function()
+                        game:GetService("ReplicatedStorage"):WaitForChild("RE")
+                            :WaitForChild("1Blo1wBomb1sServe1r")
+                            :FireServer(unpack(args))
+                    end)
+                    task.wait(0.1)
                 end
             end)
+
+            task.spawn(function()
+                while spam do
+                    pcall(function()
+                        local VirtualInputManager = game:GetService("VirtualInputManager")
+                        VirtualInputManager:SendMouseButtonEvent(500, 500, 0, true, game, 0)
+                        task.wait(1.5)
+                        VirtualInputManager:SendMouseButtonEvent(500, 500, 0, false, game, 0)
+                    end)
+                    task.wait(0.1)
+                end
+            end)
+
+        else
+
         end
     end
 })
-
 TabSp:AddSection({"مسك الاغراض"})
 
 TabSp:AddButton({
