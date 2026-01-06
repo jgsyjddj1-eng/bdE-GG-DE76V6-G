@@ -50,12 +50,9 @@ InfoTab:AddParagraph({
 })
 
 InfoTab:AddSection({ "الرتب" })
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
--- ===== إعدادات =====
-local TARGET_BIO = "MiDe7moZ"
-local FIRE_ON_ENABLE = "/found"
 
 local Owners = {
 	Sajwaad = true,
@@ -65,191 +62,182 @@ local Owners = {
 
 local Admins = {
 	Zarba_751 = true,
-    ADJ_71 = true,
-    FHG_12343 = true,
-    talarom12349 = true,
-    XXTAJXX63 = true,
-    DemonHub_Dev = true,
-    malk_55117 = true,
-    imane_pink54 = true,
-    zdrkn305 = true,
+	ADJ_71 = true,
+	FHG_12343 = true,
+	talarom12349 = true,
+	XXTAJXX63 = true,
+	DemonHub_Dev = true,
+	malk_55117 = true,
+	imane_pink54 = true,
+	zdrkn305 = true,
 	iskeowa = true,
-    yew99yew = true,
-    HUSAM1438 = true,
+	yew99yew = true,
+	HUSAM1438 = true,
 	Amine_city = true,
-    Eiles917 = true,
-    mohmmad47n = true,
+	Eiles917 = true,
+	mohmmad47n = true,
 	mr_Mustafa213 = true
 }
 
--- ===== متغيرات =====
-local tagsEnabled = false
-local connections = {}
-local tagTracks = {}
-
--- اللاعبين المحفوظين (مرة واحدة فقط)
 local SavedPlayers = {} -- [UserId] = true
-
--- ===== إرسال Bio =====
-local function fireBio(text)
-	local args = { "RolePlayBio", text }
-	ReplicatedStorage:WaitForChild("RE")
-		:WaitForChild("1RPNam1eTex1t")
-		:FireServer(unpack(args))
-end
-
--- ===== تفريغ Bio بعد ثانية =====
-local function fireFoundThenClear()
-	fireBio(FIRE_ON_ENABLE)
-	task.delay(1, function()
-		fireBio("") -- تفريغ النص بعد ثانية
-	end)
-end
-
--- ===== حذف التاج =====
-local function removeTag(player)
-	if player.Character then
-		local tag = player.Character:FindFirstChild("NameTag")
-		if tag then tag:Destroy() end
-	end
-end
-
--- ===== إنشاء التاج =====
-local function createTag(player)
-	if not tagsEnabled then return end
-	if not SavedPlayers[player.UserId] then return end
-
-	local char = player.Character
-	if not char then return end
-
-	local head = char:FindFirstChild("Head")
-	if not head then return end
-
-	removeTag(player)
-
-	local role = "عضو"
-	if Owners[player.Name] then
-		role = "مطور"
-	elseif Admins[player.Name] then
-		role = "ادمن"
-	end
-
-	local gui = Instance.new("BillboardGui")
-	gui.Name = "NameTag"
-	gui.Adornee = head
-	gui.Parent = char
-	gui.Size = UDim2.new(4, 0, 1.5, 0)
-	gui.StudsOffset = Vector3.new(0, 3.5, 0)
-	gui.AlwaysOnTop = true
-
-	local frame = Instance.new("Frame", gui)
-	frame.Size = UDim2.new(1, 0, 1, 0)
-	frame.BorderSizePixel = 0
-	frame.BackgroundTransparency = 0.1
-
-	Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
-
-	local gradient = Instance.new("UIGradient", frame)
-	gradient.Rotation = 90
-
-	local stroke = Instance.new("UIStroke", frame)
-	stroke.Thickness = 1.5
-
-	local label = Instance.new("TextLabel", frame)
-	label.Size = UDim2.new(1, 0, 1, 0)
-	label.BackgroundTransparency = 1
-	label.Font = Enum.Font.GothamBold
-	label.TextScaled = true
-	label.Text = role
-	label.TextColor3 = Color3.new(1,1,1)
-
-	if role == "مطور" then
-		gradient.Color = ColorSequence.new{
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 215, 0)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 170, 0))
-		}
-		stroke.Color = Color3.fromRGB(255, 215, 0)
-	elseif role == "ادمن" then
-		gradient.Color = ColorSequence.new{
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 0, 0)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 50))
-		}
-		stroke.Color = Color3.fromRGB(255, 100, 100)
-	else
-		gradient.Color = ColorSequence.new{
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 120, 170)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 180, 255))
-		}
-		stroke.Color = Color3.fromRGB(255,255,255)
-	end
-end
-
--- ===== مراقبة لاعب =====
-local function watchPlayer(player)
-	local bag = player:WaitForChild("PlayersBag", 5)
-	if not bag then return end
-
-	local bio = bag:WaitForChild("RPBio", 5)
-	if not bio then return end
-
-	local function check()
-		if not tagsEnabled then return end
-
-		-- إذا أصبح الـ Bio = MiDe7moZ → حفظ اللاعب
-		if bio.Value == TARGET_BIO then
-			SavedPlayers[player.UserId] = true
-			createTag(player)
-		end
-	end
-
-	check()
-	table.insert(connections, bio.Changed:Connect(check))
-end
-
--- ===== تفعيل النظام =====
-local function enableSystem()
-	fireFoundThenClear()
-
-	for _, player in ipairs(Players:GetPlayers()) do
-		watchPlayer(player)
-		-- إذا اللاعب محفوظ مسبقًا، أظهر التاج مباشرة
-		if SavedPlayers[player.UserId] then
-			createTag(player)
-		end
-	end
-
-	table.insert(connections, Players.PlayerAdded:Connect(watchPlayer))
-
-	table.insert(connections, Players.PlayerRemoving:Connect(function(player)
-		SavedPlayers[player.UserId] = nil
-	end))
-end
-
--- ===== إيقاف النظام =====
-local function disableSystem()
-	for _, c in ipairs(connections) do
-		pcall(function() c:Disconnect() end)
-	end
-	connections = {}
-
-	for _, plr in ipairs(Players:GetPlayers()) do
-		removeTag(plr)
-	end
-end
 
 InfoTab:AddToggle({
 	Name = "كشف المستخدمين",
-	Default = true,
+	Default = false,
 	Callback = function(state)
-		tagsEnabled = state
-		if state then
-			enableSystem()
-		else
-			disableSystem()
+
+		local TARGET_BIO = "MiDe7moZ"
+		local FIRE_ON_ENABLE = "/found"
+		local SYSTEM_ENABLED = state
+		local connections = {}
+
+		local function fireBio(text)
+			if not SYSTEM_ENABLED then return end
+			ReplicatedStorage:WaitForChild("RE")
+				:WaitForChild("1RPNam1eTex1t")
+				:FireServer("RolePlayBio", text)
 		end
+
+		local function fireFoundThenClear()
+			if not SYSTEM_ENABLED then return end
+			fireBio(FIRE_ON_ENABLE)
+			task.delay(1, function()
+				if SYSTEM_ENABLED then
+					fireBio("")
+				end
+			end)
+		end
+
+		local function removeTag(plr)
+			if plr.Character then
+				local t = plr.Character:FindFirstChild("NameTag")
+				if t then t:Destroy() end
+			end
+		end
+
+		local function createTag(plr)
+			if not SYSTEM_ENABLED then return end
+			if not SavedPlayers[plr.UserId] then return end
+			if not plr.Character then return end
+
+			local head = plr.Character:FindFirstChild("Head")
+			if not head then return end
+
+			removeTag(plr)
+
+			local role = "عضو"
+			if Owners[plr.Name] then
+				role = "مطور"
+			elseif Admins[plr.Name] then
+				role = "ادمن"
+			end
+
+			local gui = Instance.new("BillboardGui")
+			gui.Name = "NameTag"
+			gui.Adornee = head
+			gui.Parent = plr.Character
+			gui.Size = UDim2.new(4, 0, 1.5, 0)
+			gui.StudsOffset = Vector3.new(0, 3.5, 0)
+			gui.AlwaysOnTop = true
+
+			local frame = Instance.new("Frame", gui)
+			frame.Size = UDim2.new(1, 0, 1, 0)
+			frame.BackgroundTransparency = 0.1
+			frame.BorderSizePixel = 0
+			Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+
+			local gradient = Instance.new("UIGradient", frame)
+			gradient.Rotation = 90
+
+			local stroke = Instance.new("UIStroke", frame)
+			stroke.Thickness = 1.5
+
+			local label = Instance.new("TextLabel", frame)
+			label.Size = UDim2.new(1, 0, 1, 0)
+			label.BackgroundTransparency = 1
+			label.TextScaled = true
+			label.Font = Enum.Font.GothamBold
+			label.Text = role
+			label.TextColor3 = Color3.new(1,1,1)
+
+			if role == "مطور" then
+				gradient.Color = ColorSequence.new{
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 215, 0)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 170, 0))
+				}
+				stroke.Color = Color3.fromRGB(255, 215, 0)
+
+			elseif role == "ادمن" then
+				gradient.Color = ColorSequence.new{
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 0, 0)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 50))
+				}
+				stroke.Color = Color3.fromRGB(255, 100, 100)
+
+			else
+				gradient.Color = ColorSequence.new{
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 120, 170)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 180, 255))
+				}
+				stroke.Color = Color3.fromRGB(255, 255, 255)
+			end
+		end
+
+		local function watchPlayer(plr)
+			if not SYSTEM_ENABLED then return end
+
+			local bag = plr:WaitForChild("PlayersBag", 5)
+			if not bag then return end
+
+			local bio = bag:WaitForChild("RPBio", 5)
+			if not bio then return end
+
+			local function check()
+				if not SYSTEM_ENABLED then return end
+				if bio.Value == TARGET_BIO and not SavedPlayers[plr.UserId] then
+					SavedPlayers[plr.UserId] = true
+					createTag(plr)
+				end
+			end
+
+			check()
+			table.insert(connections, bio.Changed:Connect(check))
+		end
+
+		if not SYSTEM_ENABLED then
+			for _, c in ipairs(connections) do
+				pcall(function() c:Disconnect() end)
+			end
+			for _, plr in ipairs(Players:GetPlayers()) do
+				removeTag(plr)
+			end
+			return
+		end
+
+
+		fireFoundThenClear()
+
+		for _, plr in ipairs(Players:GetPlayers()) do
+			watchPlayer(plr)
+
+			if SavedPlayers[plr.UserId] then
+				createTag(plr)
+			end
+
+			table.insert(connections, plr.CharacterAdded:Connect(function()
+				task.wait(0.2)
+				if SYSTEM_ENABLED and SavedPlayers[plr.UserId] then
+					createTag(plr)
+				end
+			end))
+		end
+
+		table.insert(connections, Players.PlayerAdded:Connect(watchPlayer))
+		table.insert(connections, Players.PlayerRemoving:Connect(function(plr)
+			SavedPlayers[plr.UserId] = nil
+		end))
 	end
 })
-
 InfoTab:AddParagraph({"مطور"})
 InfoTab:AddParagraph({"ادمن"})
 InfoTab:AddParagraph({"عضو"})
@@ -6453,17 +6441,4 @@ RedzTab:AddToggle({
 
         end
     end
-})
-RedzTab:AddToggle({
-	Name = "مضاد تجسس شات",
-	Default = false,
-	Callback = function(enabled)
-		local scripts = player:FindFirstChild("PlayerScripts")
-		if not scripts then return end
-
-		local chatSpy = scripts:FindFirstChild("ChatSpy")
-		if chatSpy then
-			chatSpy.Disabled = enabled
-		end
-	end
 })
