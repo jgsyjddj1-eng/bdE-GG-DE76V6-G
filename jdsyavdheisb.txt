@@ -77,6 +77,7 @@ local Admins = {
 K_31387 = true,
 haker_457230 = true,
 rengoku28306 = true,
+wkwjdnsnsndnxxnsnsn = true,
 	Eiles917 = true,
 	mohmmad47n = true,
 	mr_Mustafa213 = true
