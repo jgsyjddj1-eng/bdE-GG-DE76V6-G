@@ -77,6 +77,7 @@ local Admins = {
 K_31387 = true,
 haker_457230 = true,
 rengoku28306 = true,
+Hwrejplq = true,
 wkwjdnsnsndnxxnsnsn = true,
 	Eiles917 = true,
 	mohmmad47n = true,
@@ -6587,3 +6588,8 @@ RedzTab:AddToggle({
         end
     end
 })
+local args = {
+	"RolePlayName",
+	"DemoZHub V0.9"
+}
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTex1t"):FireServer(unpack(args))
