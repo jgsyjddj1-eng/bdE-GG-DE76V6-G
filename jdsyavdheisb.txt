@@ -6519,6 +6519,77 @@ RedzTab:AddToggle({
 	end
 })
 RedzTab:AddToggle({
+	Name = "مضاد فلنق",
+	Default = false,
+	Callback = function(value)
+
+		local Players = game:GetService("Players")
+		local Workspace = game:GetService("Workspace")
+
+		local LocalPlayer = Players.LocalPlayer
+
+
+		local antiVehicleCollision = value
+		local keywords = { "bomb", "soccer", "boat" }
+		local carKeyword = "car"
+		local wheelKeyword = "wheel"
+
+
+		local function containsKeyword(name, list)
+			if typeof(name) ~= "string" then return false end
+			name = name:lower()
+			for _, word in ipairs(list) do
+				if name:find(word) then
+					return true
+				end
+			end
+			return false
+		end
+
+		local function applyCollision(obj)
+			if not obj:IsA("BasePart") then return end
+			if obj.Name:lower():find(wheelKeyword) then return end
+
+			local parent = obj
+			while parent do
+				local pname = parent.Name:lower()
+
+				if pname:find(wheelKeyword) then
+					return
+				end
+
+				if pname:find(carKeyword) or containsKeyword(pname, keywords) then
+					obj.CanCollide = not antiVehicleCollision
+					return
+				end
+
+				parent = parent.Parent
+			end
+		end
+
+		local function scanAll()
+			for _, obj in ipairs(Workspace:GetDescendants()) do
+				applyCollision(obj)
+			end
+		end
+
+
+		if _G.AntiVehicleConn then
+			_G.AntiVehicleConn:Disconnect()
+			_G.AntiVehicleConn = nil
+		end
+
+
+		scanAll()
+
+		if value then
+			_G.AntiVehicleConn = Workspace.DescendantAdded:Connect(function(obj)
+				applyCollision(obj)
+			end)
+		end
+	end
+})
+RedzTab:AddToggle({
     Name = "مضاد لاق ادوات",
     Default = false,
     Callback = function(state)
