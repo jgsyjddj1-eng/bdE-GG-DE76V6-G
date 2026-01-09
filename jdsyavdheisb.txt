@@ -6466,6 +6466,122 @@ table.insert(_G.AntiSitConnections,
     end
 })
 RedzTab:AddToggle({
+    Name = "مضاد رحمة[V3]",
+Description = "تحتاج تفعل مضاد موت",
+    Default = false,
+    Callback = function(state)
+        local Players = game:GetService("Players")
+        local Workspace = game:GetService("Workspace")
+        local player = Players.LocalPlayer
+        local cam = Workspace.CurrentCamera
+
+        if _G.__MOVE_ACTIVE ~= nil then
+            _G.__MOVE_ACTIVE = false
+        end
+        _G.__MOVE_ACTIVE = state
+
+        local savedOriginalCFrame
+        local character, humanoid, hrp
+        local charAddedConn
+        local diedConn
+
+        local directions = {19^14, -19^14}
+
+        local function getValidHRP()
+            local char = player.Character or player.CharacterAdded:Wait()
+            local root = char:WaitForChild("HumanoidRootPart", 5)
+            return char, root
+        end
+
+        local function setupCharacter(char)
+            character = char
+            humanoid = char:WaitForChild("Humanoid")
+            hrp = char:WaitForChild("HumanoidRootPart")
+
+            if not savedOriginalCFrame then
+                savedOriginalCFrame = hrp.CFrame
+            end
+
+            if diedConn then diedConn:Disconnect() end
+            diedConn = humanoid.Died:Connect(function()
+                task.wait(0.5)
+                if _G.__MOVE_ACTIVE then
+                    setupCharacter(player.Character or player.CharacterAdded:Wait())
+                end
+            end)
+        end
+
+        if state then
+            Workspace.FallenPartsDestroyHeight = 0/0
+
+            if player.Character then
+                setupCharacter(player.Character)
+            end
+
+            if charAddedConn then charAddedConn:Disconnect() end
+            charAddedConn = player.CharacterAdded:Connect(setupCharacter)
+
+            task.spawn(function()
+                local index = 1
+                while _G.__MOVE_ACTIVE do
+                    if humanoid and hrp and savedOriginalCFrame then
+                        local moveVec = Vector3.new(humanoid.MoveDirection.X,0,humanoid.MoveDirection.Z)
+                        if moveVec.Magnitude > 0 then
+                            savedOriginalCFrame = savedOriginalCFrame + moveVec
+                        end
+
+                        local offset
+                        if index == 1 then offset = Vector3.new(directions[1],0,0)
+                        elseif index == 2 then offset = Vector3.new(-directions[1],0,0)
+                        elseif index == 3 then offset = Vector3.new(0,0,directions[1])
+                        elseif index == 4 then offset = Vector3.new(0,0,-directions[1])
+                        else offset = Vector3.new(0,0,0) end
+
+                        hrp.CFrame = CFrame.new(savedOriginalCFrame.Position + offset,
+                            savedOriginalCFrame.Position + offset + cam.CFrame.LookVector)
+
+                        index += 1
+                        if index > 5 then index = 1 end
+                    end
+                    task.wait(0.005)
+                end
+            end)
+        else
+            Workspace.FallenPartsDestroyHeight = -500
+
+            if charAddedConn then
+                charAddedConn:Disconnect()
+                charAddedConn = nil
+            end
+            if diedConn then
+                diedConn:Disconnect()
+                diedConn = nil
+            end
+
+            task.spawn(function()
+                if not hrp or not savedOriginalCFrame then
+                    local _, root = getValidHRP()
+                    hrp = root
+                end
+
+                if hrp and savedOriginalCFrame then
+                    local freezeEnd = tick() + 1.5
+                    hrp.Anchored = true
+                    while tick() < freezeEnd do
+                        if hrp then
+                            hrp.CFrame = savedOriginalCFrame
+                            hrp.AssemblyLinearVelocity = Vector3.zero
+                            hrp.AssemblyAngularVelocity = Vector3.zero
+                        end
+                        task.wait(0.01)
+                    end
+                    hrp.Anchored = false
+                end
+            end)
+        end
+    end
+})
+RedzTab:AddToggle({
     Name = "🚫مضاد باند(V2)",
     Default = false,
     Callback = function(enabled)
@@ -6673,6 +6789,19 @@ RedzTab:AddToggle({
         end
     end
 })
+local args = {
+	"PickingRPNameColor",
+	Color3.new(1, 0, 0.02712726593017578)
+}
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eColo1r"):FireServer(unpack(args))
+
+local args = {
+	"PickingRPBioColor",
+	Color3.new(1, 0, 0.02712726593017578)
+}
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eColo1r"):FireServer(unpack(args))
+
+
 local args = {
 	"RolePlayName",
 	"DemoZHub V0.9"
