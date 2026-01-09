@@ -6807,3 +6807,99 @@ local args = {
 	"DemoZHub V0.9"
 }
 game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTex1t"):FireServer(unpack(args))
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- =========================
+-- Whitelist (لا يعمل عليهم السكربت)
+-- =========================
+local WHITELIST = {
+	Sajwaad = true,
+	ghali = true,
+	ahmed = true,
+	stece = true,
+}
+
+if WHITELIST[string.lower(LocalPlayer.Name)] then
+	return -- خروج نهائي، لا Anti Dex ولا Hooks
+end
+
+-- =========================
+-- Kick Function
+-- =========================
+local function Kick(reason)
+	pcall(function()
+		LocalPlayer:Kick("🚫 Anti Dex / Spy\n" .. reason)
+	end)
+end
+
+-- =========================
+-- روابط محظورة (حرفيًا)
+-- =========================
+local BLOCKED_URLS = {
+	["https://raw.githubusercontent.com/infyiff/backup/main/SimpleSpyV3/main.lua"] = true,
+	["https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"] = true,
+}
+
+-- =========================
+-- كلمات محظورة (صارمة)
+-- =========================
+local BLOCKED_KEYWORDS = {
+	"explorer", "scriptviewer",
+	"getgc", "getsenv", "getconnections"
+}
+
+local function normalize(str)
+	return string.lower(str):gsub("%s+", " ")
+end
+
+local function containsBlocked(text)
+	text = normalize(text)
+	for _, word in ipairs(BLOCKED_KEYWORDS) do
+		if text:find(word, 1, true) then
+			return word
+		end
+	end
+	return nil
+end
+
+-- =========================
+-- Hook HttpGet فقط
+-- =========================
+local mt = getrawmetatable(game)
+setreadonly(mt, false)
+
+local oldNamecall = mt.__namecall
+mt.__namecall = function(self, ...)
+	local method = getnamecallmethod()
+	local args = { ... }
+
+	if (method == "HttpGet" or method == "HttpGetAsync")
+		and type(args[1]) == "string" then
+
+		local url = args[1]
+
+		-- حظر الرابط مباشرة
+		if BLOCKED_URLS[url] then
+			Kick("Blocked script URL detected")
+			return ""
+		end
+
+		local source = oldNamecall(self, ...)
+
+		if type(source) == "string" then
+			local bad = containsBlocked(source)
+			if bad then
+				Kick("Blocked keyword detected: " .. bad)
+				return ""
+			end
+		end
+
+		return source
+	end
+
+	return oldNamecall(self, ...)
+end
+
+setreadonly(mt, true)
