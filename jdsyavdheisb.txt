@@ -88,7 +88,7 @@ local SavedPlayers = {} -- [UserId] = true
 
 InfoTab:AddToggle({
 	Name = "كشف المستخدمين",
-	Default = false,
+	Default = true,
 	Callback = function(state)
 
 		local TARGET_BIO = "MiDe7moZ"
