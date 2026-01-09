@@ -4090,53 +4090,11 @@ SamlaTab:AddToggle({
         end
     end
 })
-SamlaTab:AddSection({ "عداد وقت الصملة" })
 
-PlayerStats.TimePara = SamlaTab:AddParagraph({Text="Time 00:00:00"})
-PlayerStats.LeavePara = 
-
-SamlaTab:AddSection({ "عداد نقاط الخروج" })
-SamlaTab:AddParagraph({Text="عدد مرات الخروج: 0"})
-
-task.spawn(function()
-    while true do
-        if Selec9tedPlayerNOme and PlayerStats[Selec9tedPlayerNOme] then
-            local s = PlayerStats[Selec9tedPlayerNOme]
-            s.Seconds += 1
-            if s.Seconds >= 60 then
-                s.Seconds = 0
-                s.Minutes += 1
-            end
-            if s.Minutes >= 60 then
-                s.Minutes = 0
-                s.Hours += 1
-            end
-            PlayerStats.TimePara:Set(
-                string.format(
-                    "%s : %02d:%02d:%02d",
-                    Selec9tedPlayerNOme,
-                    s.Hours,s.Minutes,s.Seconds
-                )
-            )
-        end
-        task.wait(1)
-    end
-end)
-
-Players.PlayerRemoving:Connect(function(plr)
-    if plr.Name == Selec9tedPlayerNOme then
-        local s = PlayerStats[Selec9tedPlayerNOme]
-        if s then
-            s.LeaveCount += 1
-            PlayerStats.LeavePara:Set(
-                Selec9tedPlayerNOme.." :عدد مرات الخروج "..s.LeaveCount
-            )
-        end
-    end
-end)
+SamlaTab:AddSection({ "الفلنق قوي جدا جدا جديد" })
 
 SamlaTab:AddToggle({
-    Name = "فلنق اللاعب",
+    Name = "[V4]فلنق",
     Default = false,
     Callback = function(Value)
 
@@ -4281,7 +4239,50 @@ SamlaTab:AddToggle({
     end
 })
 
-InfoTab:AddSection({ "الرحمة(Bang) " })
+SamlaTab:AddSection({ "عداد وقت الصملة" })
+
+PlayerStats.TimePara = SamlaTab:AddParagraph({Text="Time 00:00:00"})
+PlayerStats.LeavePara = 
+
+SamlaTab:AddSection({ "عداد نقاط الخروج" })
+SamlaTab:AddParagraph({Text="عدد مرات الخروج: 0"})
+
+task.spawn(function()
+    while true do
+        if Selec9tedPlayerNOme and PlayerStats[Selec9tedPlayerNOme] then
+            local s = PlayerStats[Selec9tedPlayerNOme]
+            s.Seconds += 1
+            if s.Seconds >= 60 then
+                s.Seconds = 0
+                s.Minutes += 1
+            end
+            if s.Minutes >= 60 then
+                s.Minutes = 0
+                s.Hours += 1
+            end
+            PlayerStats.TimePara:Set(
+                string.format(
+                    "%s : %02d:%02d:%02d",
+                    Selec9tedPlayerNOme,
+                    s.Hours,s.Minutes,s.Seconds
+                )
+            )
+        end
+        task.wait(1)
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(plr)
+    if plr.Name == Selec9tedPlayerNOme then
+        local s = PlayerStats[Selec9tedPlayerNOme]
+        if s then
+            s.LeaveCount += 1
+            PlayerStats.LeavePara:Set(
+                Selec9tedPlayerNOme.." :عدد مرات الخروج "..s.LeaveCount
+            )
+        end
+    end
+end)
 
 local function createBangToggle(name,yOffset,faceBang)
     local toggleActive = false
