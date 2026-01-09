@@ -707,6 +707,17 @@ TabNM:AddToggle({
 local ChatTab = Window:MakeTab({ 
 Title = "الشات", 
 Icon = "rbxassetid://10723415903" })
+local StarterGui = game:GetService("StarterGui")
+
+ChatTab:AddToggle({
+    Name = " إظهار / إخفاء الشات القديم",
+    Default = false,
+    Callback = function(state)
+        pcall(function()
+            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, state)
+        end)
+    end
+})
 ChatTab:AddButton({
     Name = "سكربت الشات",
     Callback = function()
