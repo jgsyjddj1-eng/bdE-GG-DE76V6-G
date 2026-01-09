@@ -22,8 +22,8 @@ Icon = "rbxassetid://10723415903" })
 
 InfoTab:AddSection({ "NetroZHubتحديثات" })
 InfoTab:AddParagraph({
-    Title = "Christmas🎅V0.8",
-    Text = "الشات+قسم الرحمه+تصحيح الاخطاء"
+    Title = "NetroZHubV0.9",
+    Text = "اضافة فلنق في قسم الرحمة+تدبيل قوارب+شات+يعمل على باقي الهاكات"
 })
 
 InfoTab:AddDiscordInvite({
