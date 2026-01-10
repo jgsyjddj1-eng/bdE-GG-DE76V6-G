@@ -6235,16 +6235,19 @@ Tablag:AddToggle({
         end)
     end
 })
+local LaptopLoop = false
+
 Tablag:AddToggle({
-    Name = "جديد]لاق باللابتوب]",
+    Name = "لاق باللابتوب",
     Default = false,
     Callback = function(state)
-        local player = game.Players.LocalPlayer
-
+        LaptopLoop = state
         if not state then return end
 
+        local player = game.Players.LocalPlayer
+
         task.spawn(function()
-            while state do
+            while LaptopLoop do
                 local char = player.Character
                 local root = char and char:FindFirstChild("HumanoidRootPart")
                 if not root then
@@ -6256,9 +6259,7 @@ Tablag:AddToggle({
                     workspace.WorkspaceCom["001_CommercialStores"]
                     .CommercialStorage1.Store.Tools.Laptop
 
-                local clickDetector =
-                    workspace.WorkspaceCom["001_CommercialStores"]
-                    .CommercialStorage1.Store.Tools.Laptop.ClickDetector
+                local clickDetector = laptop and laptop:FindFirstChild("ClickDetector")
 
                 if laptop and clickDetector then
                     root.CFrame = laptop.CFrame
@@ -6270,7 +6271,6 @@ Tablag:AddToggle({
         end)
     end
 })
-
 Tablag:AddButton({
     Name = "تفعيل متجر الهواتف",
     Callback = function()
