@@ -6235,6 +6235,38 @@ Tablag:AddToggle({
     end
 })
 
+Tablag:AddButton({
+    Name = "تفعيل متجر الهواتف",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local Workspace = game:GetService("Workspace")
+        local player = Players.LocalPlayer
+
+
+        local char = player.Character or player.CharacterAdded:Wait()
+        local root = char:WaitForChild("HumanoidRootPart")
+
+        root.CFrame = CFrame.new(-130.48, 20.84, 237.21)
+        task.wait(0.2)
+        local button = Workspace:FindFirstChild("WorkspaceCom")
+        if button then
+            button = button:FindFirstChild("001_CommercialStores")
+            if button then
+                button = button:FindFirstChild("CommercialPlot1Buttons")
+                if button then
+                    button = button:FindFirstChild("Commercial1Store1")
+                    if button then
+                        local clickDet = button:FindFirstChildOfClass("ClickDetector")
+                        if clickDet then
+                            fireclickdetector(clickDet)
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
 Tablag:AddParagraph({
     Title = "ملاحظة",
     Text = "انتظر 20 ثانية لظهور تأثير اللاق"
