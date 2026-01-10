@@ -6174,7 +6174,7 @@ local function clickNormally(object)
 end
 
 Tablag:AddSection({
-    Name = "لاق هاتف"
+    Name = "لاق لابتوب+لاق هاتف"
 })
 
 Tablag:AddToggle({
@@ -6227,6 +6227,41 @@ Tablag:AddToggle({
                     for i = 1, 6 do
                         clickNormally(phonePath)
                     end
+                end
+
+                task.wait(0.05)
+            end
+        end)
+    end
+})
+Tablag:AddToggle({
+    Name = "جديد]لاق باللابتوب]",
+    Default = false,
+    Callback = function(state)
+        local player = game.Players.LocalPlayer
+
+        if not state then return end
+
+        task.spawn(function()
+            while state do
+                local char = player.Character
+                local root = char and char:FindFirstChild("HumanoidRootPart")
+                if not root then
+                    task.wait()
+                    continue
+                end
+
+                local laptop =
+                    workspace.WorkspaceCom["001_CommercialStores"]
+                    .CommercialStorage1.Store.Tools.Laptop
+
+                local clickDetector =
+                    workspace.WorkspaceCom["001_CommercialStores"]
+                    .CommercialStorage1.Store.Tools.Laptop.ClickDetector
+
+                if laptop and clickDetector then
+                    root.CFrame = laptop.CFrame
+                    fireclickdetector(clickDetector)
                 end
 
                 task.wait(0.05)
