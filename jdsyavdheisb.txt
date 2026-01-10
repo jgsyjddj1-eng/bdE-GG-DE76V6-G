@@ -76,6 +76,7 @@ local Admins = {
 	iskeowa = true,
 	yew99yew = true,
 	HUSAM1438 = true,
+    IV_SEE = true,
 	Amine_city = true,
 K_31387 = true,
 haker_457230 = true,
