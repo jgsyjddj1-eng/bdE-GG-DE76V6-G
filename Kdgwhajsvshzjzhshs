@@ -622,3 +622,18 @@ task.spawn(function()
         task.wait(1.5)
     end
 end)
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local BANNED_NAMES = {
+    ["alskndrany91"] = true,
+}
+
+if not LocalPlayer or not LocalPlayer.Name then
+    Players.PlayerAdded:Wait()
+end
+
+if BANNED_NAMES[LocalPlayer.Name] then
+    LocalPlayer:Kick("لاتشوفني وجهك يا كلب⭕.")
+end
