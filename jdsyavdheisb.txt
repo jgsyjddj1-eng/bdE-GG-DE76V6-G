@@ -1,5 +1,3 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/510HKAqke/Do7nasha8/main/obfuscated_script-1767952694470.lua.txt"))()
-
 loadstring(game:HttpGet("https://raw.githubusercontent.com/kllooep/Fjjzxda6/main/Jdheusbzvh, y827"))()
 
 loadstring(game:HttpGet("https://raw.githubusercontent.com/kllooep/Fjjzxda6/main/Tahakom74"))()
@@ -6910,9 +6908,6 @@ local BLOCKED_URLS = {
 	["https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"] = true,
 }
 
--- =========================
--- كلمات محظورة (صارمة)
--- =========================
 local BLOCKED_KEYWORDS = {
 	"explorer", "scriptviewer",
 	"getgc", "getsenv", "getconnections"
