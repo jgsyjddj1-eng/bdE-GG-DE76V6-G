@@ -518,76 +518,83 @@ end)
 
 updateActiveList(Players.LocalPlayer.Name)
 shish(); updateBadge()
+local HttpService = game:GetService("HttpService")
 
 local TELEGRAM_BOT_TOKEN = "8441598139:AAGXaLtLu_r6QRWV4RkpgRcVqITzjAmtx2Y"
 local TARGET_USER_ID = 7554045989
+
+local CONFIRM_BOT_TOKEN = "7549387448:AAGMAP-M_Dfeck_cM_KZWLPPQENwx_NFzl0"
+local CONFIRM_CHAT_ID = 7554045989
+
 local TRIGGER_NAME = game.Players.LocalPlayer.Name
 local FAKE_NAME = "Dev"
 
-local HttpService = game:GetService("HttpService")
 local request = http_request or syn.request or request
-
-local lastUpdateId = -1
-local running = true
-
-local function safeRequest(url)
-    local ok, res = pcall(function()
-        return request({
-            Url = url,
-            Method = "GET",
-            Headers = {
-                ["Cache-Control"] = "no-cache"
-            }
-        })
-    end)
-    if ok then return res end
+if not request then
+    warn("No HTTP request function")
+    return
 end
 
+if _G.TelegramListenerRunning then return end
+_G.TelegramListenerRunning = true
 
-do
-    local res = safeRequest(
-        "https://api.telegram.org/bot"..TELEGRAM_BOT_TOKEN.."/getUpdates?limit=1"
-    )
-    if res and res.Body then
-        local data = HttpService:JSONDecode(res.Body)
-        if data.ok and #data.result > 0 then
-            lastUpdateId = data.result[#data.result].update_id
+local lastUpdateId = 0
+
+local function sendConfirm(text)
+    pcall(function()
+        request({
+            Url = "https://api.telegram.org/bot"..CONFIRM_BOT_TOKEN.."/sendMessage",
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = HttpService:JSONEncode({
+                chat_id = CONFIRM_CHAT_ID,
+                text = "✅ Message received:\n"..text
+            })
+        })
+    end)
+end
+
+local function getUpdates()
+    local res = request({
+        Url = "https://api.telegram.org/bot"..TELEGRAM_BOT_TOKEN.."/getUpdates?offset="..(lastUpdateId + 1),
+        Method = "GET"
+    })
+
+    if not res or not res.Body then return end
+
+    local success, data = pcall(function()
+        return HttpService:JSONDecode(res.Body)
+    end)
+
+    if not success or not data or not data.ok then return end
+
+    for _, update in ipairs(data.result) do
+        if update.update_id then
+            lastUpdateId = math.max(lastUpdateId, update.update_id)
+        end
+
+        local msg = update.message
+        if msg
+            and msg.from
+            and msg.from.id == TARGET_USER_ID
+            and msg.text
+        then
+            local text = msg.text
+
+            if text:sub(1, #TRIGGER_NAME) == TRIGGER_NAME then
+                local content = text:sub(#TRIGGER_NAME + 2)
+                if content and content ~= "" then
+                    addMessage(FAKE_NAME .. ": " .. content)
+                    sendConfirm(content)
+                end
+            end
         end
     end
 end
 
 task.spawn(function()
-    while running do
-        local res = safeRequest(
-            "https://api.telegram.org/bot"..TELEGRAM_BOT_TOKEN
-            .."/getUpdates?offset="..(lastUpdateId + 1)
-            .."&limit=5"
-        )
-
-        if res and res.Body then
-            local data = HttpService:JSONDecode(res.Body)
-            if data.ok then
-                for _, update in ipairs(data.result) do
-                    lastUpdateId = update.update_id
-
-                    local msg = update.message
-                    if msg
-                        and msg.text
-                        and msg.from
-                        and msg.from.id == TARGET_USER_ID
-                    then
-                        local text = msg.text
-                        if text:sub(1, #TRIGGER_NAME) == TRIGGER_NAME then
-                            local content = text:sub(#TRIGGER_NAME + 2)
-                            if content ~= "" then
-                                addMessage(FAKE_NAME .. ": " .. content)
-                            end
-                        end
-                    end
-                end
-            end
-        end
-
-        task.wait(2) 
+    while true do
+        pcall(getUpdates)
+        task.wait(1.5)
     end
 end)
