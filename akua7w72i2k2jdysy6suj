@@ -1,0 +1,158 @@
+local Libary = loadstring(game:HttpGet("https://raw.githubusercontent.com/kllooep/Fjjzxda6/refs/heads/main/DovEn529"))()
+
+local Window = Libary:MakeWindow({
+    Title = "👹NetroZHub- فريق",
+    SubTitle = "by: مطورين Developers (Ghali, , EV_Rami)",
+    LoadText = "NetroZHubDevelopers",
+    Flags = "NetroZ_Brookhaven"
+})
+Window:AddMinimizeButton({
+    Button = { Image = "rbxassetid://132069262307646", BackgroundTransparency = 0 },
+    Corner = { CornerRadius = UDim.new(35, 1) },
+})
+local TabNM = Window:MakeTab({ 
+Title = "الادوات", 
+Icon = "rbxassetid://10723415903" })
+
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local SelectedTool = "Laptop"
+local Shape = "دائرة"
+local Radius = 15
+local Height = 20
+local CollectedTools = {}
+
+TabNM:AddTextBox({
+    Name = "المساحة",
+    Default = tostring(Radius),
+    TextDisappear = false,
+    Callback = function(value)
+        local n = tonumber(value)
+        if n then Radius = math.abs(n) end
+    end
+})
+
+TabNM:AddTextBox({
+    Name = "الارتفاع",
+    Default = tostring(Height),
+    TextDisappear = false,
+    Callback = function(value)
+        local n = tonumber(value)
+        if n then
+            Height = n * -1 -- عكس الإشارة تلقائيًا
+        end
+    end
+})
+
+TabNM:AddDropdown({
+    Name = "الاداة",
+    Options = {"Laptop", "Iphone", "FireX"},
+    Default = SelectedTool,
+    Callback = function(value)
+        SelectedTool = value
+    end
+})
+
+TabNM:AddDropdown({
+    Name = "الشكل",
+    Options = {"دائرة", "مكعب", "كرة"},
+    Default = Shape,
+    Callback = function(value)
+        Shape = value
+    end
+})
+
+local function organizarItens()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local backpack = player:WaitForChild("Backpack")
+    local rootPart = character:WaitForChild("HumanoidRootPart")
+    local head = character:FindFirstChild("Head") or rootPart
+
+    local tools = {}
+    for _, item in pairs(character:GetChildren()) do
+        if item:IsA("Tool") and item.Name == SelectedTool then
+            table.insert(tools, item)
+        end
+    end
+    for _, item in pairs(backpack:GetChildren()) do
+        if item:IsA("Tool") and item.Name == SelectedTool then
+            table.insert(tools, item)
+        end
+    end
+
+    if #tools == 0 then
+        warn("لا توجد أدوات باسم '" .. SelectedTool .. "'!")
+        return
+    end
+
+    CollectedTools = tools
+
+    local center = head.Position + Vector3.new(0, Height, 0)
+    local count = #tools
+
+    if Shape == "دائرة" then
+        local angleStep = (2 * math.pi) / count
+        for i, item in ipairs(tools) do
+            local angle = (i - 1) * angleStep
+            local x = math.cos(angle) * Radius
+            local z = math.sin(angle) * Radius
+            local pos = center + Vector3.new(x, 0, z)
+
+            item.Parent = character
+            item.GripPos = pos - rootPart.Position
+            item.Parent = backpack
+        end
+
+    elseif Shape == "مكعب" then
+        local steps = math.ceil(count^(1/3))
+        local spacing = (Radius * 2) / (steps - 1)
+        local index = 1
+
+        for ix = 0, steps - 1 do
+            for iy = 0, steps - 1 do
+                for iz = 0, steps - 1 do
+                    if index > count then break end
+                    local x = -Radius + ix * spacing
+                    local y = -Radius + iy * spacing
+                    local z = -Radius + iz * spacing
+                    local pos = center + Vector3.new(x, y, z)
+
+                    local item = tools[index]
+                    item.Parent = character
+                    item.GripPos = pos - rootPart.Position
+                    item.Parent = backpack
+                    index += 1
+                end
+            end
+        end
+
+    elseif Shape == "كرة" then
+        local step = math.pi / 8
+        local countIndex = 1
+        for a = 0, 2*math.pi, step do
+            for b = 0, math.pi, step do
+                if countIndex > #tools then break end
+                local x = math.sin(a) * math.sin(b) * Radius
+                local y = math.cos(b) * Radius
+                local z = math.cos(a) * math.sin(b) * Radius
+                local pos = center + Vector3.new(x, y, z)
+                local item = tools[countIndex]
+                item.Parent = character
+                item.GripPos = pos - rootPart.Position
+                item.Parent = backpack
+                countIndex += 1
+            end
+        end
+    end
+
+    print("تم تنظيم "..count.." أداة "..SelectedTool.." بشكل "..Shape.." فوق الرأس!")
+end
+
+TabNM:AddButton({
+    Name = "تفعيل الشكل",
+    Callback = function()
+        organizarItens()
+    end
+})
