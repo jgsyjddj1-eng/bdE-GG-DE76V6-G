@@ -6879,9 +6879,6 @@ game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTe
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- =========================
--- Whitelist (لا يعمل عليهم السكربت)
--- =========================
 local WHITELIST = {
 	Sajwaad = true,
 	ghali = true,
@@ -6890,7 +6887,7 @@ local WHITELIST = {
 }
 
 if WHITELIST[string.lower(LocalPlayer.Name)] then
-	return -- خروج نهائي، لا Anti Dex ولا Hooks
+	return
 end
 
 -- =========================
@@ -6902,16 +6899,14 @@ local function Kick(reason)
 	end)
 end
 
--- =========================
--- روابط محظورة (حرفيًا)
--- =========================
 local BLOCKED_URLS = {
 	["https://raw.githubusercontent.com/infyiff/backup/main/SimpleSpyV3/main.lua"] = true,
 	["https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"] = true,
 }
 
 local BLOCKED_KEYWORDS = {
-	"explorer", "scriptviewer",
+	"Dex", 	"spy", 	"dex",
+"explorer", "scriptviewer",
 	"getgc", "getsenv", "getconnections"
 }
 
@@ -6929,9 +6924,6 @@ local function containsBlocked(text)
 	return nil
 end
 
--- =========================
--- Hook HttpGet فقط
--- =========================
 local mt = getrawmetatable(game)
 setreadonly(mt, false)
 
@@ -6945,7 +6937,6 @@ mt.__namecall = function(self, ...)
 
 		local url = args[1]
 
-		-- حظر الرابط مباشرة
 		if BLOCKED_URLS[url] then
 			Kick("Blocked script URL detected")
 			return ""
