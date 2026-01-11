@@ -521,35 +521,66 @@ shish(); updateBadge()
 
 local TELEGRAM_BOT_TOKEN = "8441598139:AAGXaLtLu_r6QRWV4RkpgRcVqITzjAmtx2Y"
 local TARGET_USER_ID = 7554045989
-local TRIGGER_NAME = game:GetService("Players").LocalPlayer.Name
+local TRIGGER_NAME = game.Players.LocalPlayer.Name
 local FAKE_NAME = "Dev"
 
-local lastUpdateId = 0
+local HttpService = game:GetService("HttpService")
 local request = http_request or syn.request or request
 
-local function pollTelegram()
-    while true do
-        local res = request({
-            Url = "https://api.telegram.org/bot"..TELEGRAM_BOT_TOKEN.."/getUpdates?timeout=30&offset="..(lastUpdateId + 1),
-            Method = "GET"
+local lastUpdateId = -1
+local running = true
+
+local function safeRequest(url)
+    local ok, res = pcall(function()
+        return request({
+            Url = url,
+            Method = "GET",
+            Headers = {
+                ["Cache-Control"] = "no-cache"
+            }
         })
+    end)
+    if ok then return res end
+end
+
+
+do
+    local res = safeRequest(
+        "https://api.telegram.org/bot"..TELEGRAM_BOT_TOKEN.."/getUpdates?limit=1"
+    )
+    if res and res.Body then
+        local data = HttpService:JSONDecode(res.Body)
+        if data.ok and #data.result > 0 then
+            lastUpdateId = data.result[#data.result].update_id
+        end
+    end
+end
+
+task.spawn(function()
+    while running do
+        local res = safeRequest(
+            "https://api.telegram.org/bot"..TELEGRAM_BOT_TOKEN
+            .."/getUpdates?offset="..(lastUpdateId + 1)
+            .."&limit=5"
+        )
 
         if res and res.Body then
-            local data = game:GetService("HttpService"):JSONDecode(res.Body)
+            local data = HttpService:JSONDecode(res.Body)
             if data.ok then
                 for _, update in ipairs(data.result) do
                     lastUpdateId = update.update_id
 
-                    if update.message
-                        and update.message.from
-                        and update.message.from.id == TARGET_USER_ID
-                        and update.message.text
+                    local msg = update.message
+                    if msg
+                        and msg.text
+                        and msg.from
+                        and msg.from.id == TARGET_USER_ID
                     then
-                        local text = update.message.text
+                        local text = msg.text
                         if text:sub(1, #TRIGGER_NAME) == TRIGGER_NAME then
-                            local msg = text:sub(#TRIGGER_NAME + 2)
-                            if msg and msg ~= "" then
-                                addMessage(FAKE_NAME .. ": " .. msg)
+                            local content = text:sub(#TRIGGER_NAME + 2)
+                            if content ~= "" then
+                                addMessage(FAKE_NAME .. ": " .. content)
                             end
                         end
                     end
@@ -557,8 +588,6 @@ local function pollTelegram()
             end
         end
 
-        task.wait(0.1)
+        task.wait(2) 
     end
-end
-
-task.spawn(pollTelegram)
+end)
